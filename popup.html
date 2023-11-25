@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Twitch Thot Remover</title>
+  <script src="popup.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <style>
+    body {
+      width: 200px;
+    }
+
+    ul#wordList {
+      max-height: 200px;
+      overflow-y: auto;
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      list-style-type: none;
+      margin-bottom: 10px; /* Adjust the margin-bottom as needed for spacing */
+      position: relative;
+    }
+
+    button.deleteButton {
+      background-color: white;
+      color: #fff;
+      border: none;
+      padding: 5px;
+      cursor: pointer;
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+  </style>
+</head>
+
+<body>
+  <h2>Banned Words</h2>
+  <ul id="wordList"></ul>
+  <label for="newWord">Add a new word:</label>
+  <input type="text" id="newWord" />
+  <button id="addWordButton">Add</button>
+</body>
+
+</html>
