@@ -52,6 +52,9 @@ function App() {
                         <Button variant="ghost" className='p-0 w-10' onClick={() => {
                           chrome.storage.sync.set({ bannedWords: bannedWords.filter((word) => word !== tag) });
                           setBannedWords(bannedWords.filter((word) => word !== tag));
+                          chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+                            chrome.tabs.sendMessage(tabs[0].id ?? 0, { data: '' });
+                          });
                         }}>
                           <Trash size={16} />
                         </Button>

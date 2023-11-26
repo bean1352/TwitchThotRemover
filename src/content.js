@@ -2,8 +2,18 @@ import { defaultBannedWords } from './banned'
 
 let bannedWords = [];
 
+
 chrome.runtime.onMessage.addListener(function (message) {
-  removeThumbnail(document.body, [message.data])
+  if (!message.data || message.data == '') {
+      chrome.storage.sync.get('bannedWords', function (result) {
+      removeThumbnail(document.body, result.bannedWords);
+    });
+  }
+  else {
+    removeThumbnail(document.body, [message.data]);
+  }
+  console.log(message.data);
+  //removeThumbnail(document.body, [message.data]);
 });
 
 // if chrome storage is empty, use defaultBannedWords
@@ -44,6 +54,9 @@ function removeThumbnail(node, bannedWords) {
       if (isBanned) {
         thumbnail.style.display = "none";
         console.log("banned " + titleText);
+      }
+      else{
+        thumbnail.style.display = "block";
       }
 
     }
