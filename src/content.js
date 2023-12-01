@@ -4,26 +4,27 @@ let bannedWords = [];
 
 
 chrome.runtime.onMessage.addListener(function (message) {
-  if (!message.data || message.data == '') {
-      chrome.storage.sync.get('bannedWords', function (result) {
-      removeThumbnail(document.body, result.bannedWords);
+  if (!message.data || message.data === '') {
+    chrome.storage.sync.get('bannedWords', function (result) {
+      const wordsToUse = result.bannedWords.length > 0 ? result.bannedWords : defaultBannedWords;
+      removeThumbnail(document.body, wordsToUse);
     });
-  }
-  else {
+  } else {
     removeThumbnail(document.body, [message.data]);
   }
   console.log(message.data);
-  //removeThumbnail(document.body, [message.data]);
 });
 
-// if chrome storage is empty, use defaultBannedWords
+
 chrome.storage.sync.get('bannedWords', function (result) {
   if (!result.bannedWords || result.bannedWords.length === 0) {
     chrome.storage.sync.set({ bannedWords: defaultBannedWords }, function () {
       console.log('Value is set to ' + defaultBannedWords);
+      bannedWords = defaultBannedWords;
     });
+  } else {
+    bannedWords = result.bannedWords;
   }
-  bannedWords = result.bannedWords;
 });
 
 const observer = new MutationObserver((mutations) => {
@@ -58,8 +59,6 @@ function removeThumbnail(node, bannedWords) {
       else{
         thumbnail.style.display = "block";
       }
-
     }
-
   }
 }

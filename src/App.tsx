@@ -79,11 +79,17 @@ function App() {
                 <Button
                   className='ml-2 w-12 p-0'
                   onClick={() => {
-                    chrome.storage.sync.set({ bannedWords: [...bannedWords, newWord] }, function () {
-                      console.log('Value is set to ' + [...bannedWords, newWord]);
-                    });
-                    setBannedWords([...bannedWords, newWord]);
+                    const updatedWords = [...bannedWords, newWord];
+
+                    // Update the state immediately to reflect the change in the UI
+                    setBannedWords(updatedWords);
                     setNewWord('');
+
+                    // Update the storage, then send the message
+                    chrome.storage.sync.set({ bannedWords: updatedWords }, function () {
+                      console.log('Value is set to ' + updatedWords);
+                    });
+
                     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
                       chrome.tabs.sendMessage(tabs[0].id ?? 0, { data: newWord });
                     });
