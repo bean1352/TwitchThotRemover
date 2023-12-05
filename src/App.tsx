@@ -17,13 +17,18 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 });
 
 function App() {
-  const [bannedWords, setBannedWords] = useState<string[]>([]);
+  const [bannedTitles, setBannedTitles] = useState<string[]>([]);
   const [newWord, setNewWord] = useState<string>('');
+  // const [bannedTags, setBannedTags] = useState<string[]>([]);
+  // const [newTag, setNewTag] = useState<string>('');
 
   useEffect(() => {
     chrome.storage.sync.get('bannedWords', function (data) {
-      setBannedWords(data.bannedWords);
+      setBannedTitles(data.bannedWords);
     })
+    // chrome.storage.sync.get('bannedTags', function (data) {
+    //   setBannedTags(data.bannedTags);
+    // })
   }, [])
 
 
@@ -38,28 +43,30 @@ function App() {
           <Tabs defaultValue="title">
             <TabsList>
               <TabsTrigger value="title">Title</TabsTrigger>
-              <TabsTrigger value="channel">Channel</TabsTrigger>
+              <TabsTrigger value="tags">Tags</TabsTrigger>
             </TabsList>
             <TabsContent value="title">
               <ScrollArea className="rounded-md border max-h-72 overflow-y-auto" >
                 <div className="pt-4">
                   <h4 className="ml-4 mb-4 text-sm font-medium leading-none">Titles that include:</h4>
                   <Separator />
-                  {bannedWords.map((tag, i) => (
+                  {bannedTitles?.map((tag, i) => (
                     <>
-                      <div key={tag} className="ml-4 flex justify-between items-center">
-                        {tag}
+                      <div key={i} className="ml-4 flex justify-between items-center">
+                        <span className='text-base'>{tag}</span>
                         <Button variant="ghost" className='p-0 w-10' onClick={() => {
-                          chrome.storage.sync.set({ bannedWords: bannedWords.filter((word) => word !== tag) });
-                          setBannedWords(bannedWords.filter((word) => word !== tag));
+                          const updatedTitles = bannedTitles.filter((word) => word !== tag);
+                          console.log("new words", updatedTitles);
+                          chrome.storage.sync.set({ bannedWords: updatedTitles });
+                          setBannedTitles(updatedTitles);
                           chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-                            chrome.tabs.sendMessage(tabs[0].id ?? 0, { data: '' });
+                            chrome.tabs.sendMessage(tabs[0].id ?? 0, { titles: updatedTitles });
                           });
                         }}>
                           <Trash size={16} />
                         </Button>
                       </div>
-                      {i !== bannedWords.length - 1 &&
+                      {i !== bannedTitles.length - 1 &&
                         <Separator />}
                     </>
                   ))}
@@ -79,10 +86,10 @@ function App() {
                 <Button
                   className='ml-2 w-12 p-0'
                   onClick={() => {
-                    const updatedWords = [...bannedWords, newWord];
+                    const updatedWords = [...bannedTitles, newWord];
 
                     // Update the state immediately to reflect the change in the UI
-                    setBannedWords(updatedWords);
+                    setBannedTitles(updatedWords);
                     setNewWord('');
 
                     // Update the storage, then send the message
@@ -91,7 +98,7 @@ function App() {
                     });
 
                     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-                      chrome.tabs.sendMessage(tabs[0].id ?? 0, { data: newWord });
+                      chrome.tabs.sendMessage(tabs[0].id ?? 0, { titles: updatedWords });
                     });
                   }}
                 >
@@ -100,8 +107,65 @@ function App() {
               </div>
 
             </TabsContent>
-            <TabsContent value="channel">
-              arstars
+            <TabsContent value="tags">
+              {/* <ScrollArea className="rounded-md border max-h-72 overflow-y-auto" >
+                <div className="pt-4">
+                  <h4 className="ml-4 mb-4 text-sm font-medium leading-none">Titles that include:</h4>
+                  <Separator />
+                  {bannedTags?.map((tag, i) => (
+                    <>
+                      <div key={i} className="ml-4 flex justify-between items-center">
+                        <span className='text-base'>{tag}</span>
+                        <Button variant="ghost" className='p-0 w-10' onClick={() => {
+                          const updatedTags = bannedTags.filter((word) => word !== tag);
+                          console.log("new words", updatedTags);
+                          chrome.storage.sync.set({ bannedWords: updatedTags });
+                          setBannedTitles(updatedTags);
+                          chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+                            chrome.tabs.sendMessage(tabs[0].id ?? 0, { tags: updatedTags });
+                          });
+                        }}>
+                          <Trash size={16} />
+                        </Button>
+                      </div>
+                      {i !== bannedTitles.length - 1 &&
+                        <Separator />}
+                    </>
+                  ))}
+                </div>
+              </ScrollArea>
+
+              <div className="flex items-end mt-4">
+                <div className="grid w-full max-w-sm items-center gap-1.5">
+                  <Input type="text" id="blacklist-word" placeholder="Title..." onChange={
+                    (e) => {
+                      setNewTag(e.target.value);
+                    }
+                  } value={newWord}
+                  />
+                </div>
+                <Button
+                  className='ml-2 w-12 p-0'
+                  onClick={() => {
+                    const updatedTags = [...bannedTags, newWord];
+
+                    // Update the state immediately to reflect the change in the UI
+                    setBannedTags(updatedTags);
+                    setNewTag('');
+
+                    // Update the storage, then send the message
+                    chrome.storage.sync.set({ bannedWords: updatedTags }, function () {
+                      console.log('Value is set to ' + updatedTags);
+                    });
+
+                    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+                      chrome.tabs.sendMessage(tabs[0].id ?? 0, { tags: updatedTags });
+                    });
+                  }}
+                >
+                  <Plus size={18} />
+                </Button>
+              </div> */}
             </TabsContent>
           </Tabs>
 
