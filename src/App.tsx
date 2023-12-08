@@ -19,16 +19,16 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 function App() {
   const [bannedTitles, setBannedTitles] = useState<string[]>([]);
   const [newWord, setNewWord] = useState<string>('');
-  // const [bannedTags, setBannedTags] = useState<string[]>([]);
-  // const [newTag, setNewTag] = useState<string>('');
+  const [bannedTags, setBannedTags] = useState<string[]>([]);
+  const [newTag, setNewTag] = useState<string>('');
 
   useEffect(() => {
     chrome.storage.sync.get('bannedWords', function (data) {
       setBannedTitles(data.bannedWords);
     })
-    // chrome.storage.sync.get('bannedTags', function (data) {
-    //   setBannedTags(data.bannedTags);
-    // })
+    chrome.storage.sync.get('bannedTags', function (data) {
+      setBannedTags(data.bannedTags);
+    })
   }, [])
 
 
@@ -60,7 +60,7 @@ function App() {
                           chrome.storage.sync.set({ bannedWords: updatedTitles });
                           setBannedTitles(updatedTitles);
                           chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-                            chrome.tabs.sendMessage(tabs[0].id ?? 0, { titles: updatedTitles });
+                            chrome.tabs.sendMessage(tabs[0].id ?? 0, { titles: updatedTitles,isTag: false });
                           });
                         }}>
                           <Trash size={16} />
@@ -108,18 +108,18 @@ function App() {
 
             </TabsContent>
             <TabsContent value="tags">
-              {/* <ScrollArea className="rounded-md border max-h-72 overflow-y-auto" >
+              <ScrollArea className="rounded-md border max-h-72 overflow-y-auto" >
                 <div className="pt-4">
-                  <h4 className="ml-4 mb-4 text-sm font-medium leading-none">Titles that include:</h4>
+                  <h4 className="ml-4 mb-4 text-sm font-medium leading-none">Tags that include:</h4>
                   <Separator />
                   {bannedTags?.map((tag, i) => (
                     <>
                       <div key={i} className="ml-4 flex justify-between items-center">
                         <span className='text-base'>{tag}</span>
                         <Button variant="ghost" className='p-0 w-10' onClick={() => {
-                          const updatedTags = bannedTags.filter((word) => word !== tag);
+                          const updatedTags = bannedTags.filter((tag) => tag !== tag);
                           console.log("new words", updatedTags);
-                          chrome.storage.sync.set({ bannedWords: updatedTags });
+                          chrome.storage.sync.set({ bannedTags: updatedTags });
                           setBannedTitles(updatedTags);
                           chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
                             chrome.tabs.sendMessage(tabs[0].id ?? 0, { tags: updatedTags });
@@ -141,31 +141,31 @@ function App() {
                     (e) => {
                       setNewTag(e.target.value);
                     }
-                  } value={newWord}
+                  } value={newTag}
                   />
                 </div>
                 <Button
                   className='ml-2 w-12 p-0'
                   onClick={() => {
-                    const updatedTags = [...bannedTags, newWord];
+                    const updatedTags = [...bannedTags, newTag];
 
                     // Update the state immediately to reflect the change in the UI
                     setBannedTags(updatedTags);
                     setNewTag('');
 
                     // Update the storage, then send the message
-                    chrome.storage.sync.set({ bannedWords: updatedTags }, function () {
+                    chrome.storage.sync.set({ bannedTags: updatedTags }, function () {
                       console.log('Value is set to ' + updatedTags);
                     });
 
                     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-                      chrome.tabs.sendMessage(tabs[0].id ?? 0, { tags: updatedTags });
+                      chrome.tabs.sendMessage(tabs[0].id ?? 0, { tags: updatedTags, isTag: true });
                     });
                   }}
                 >
                   <Plus size={18} />
                 </Button>
-              </div> */}
+              </div>
             </TabsContent>
           </Tabs>
 

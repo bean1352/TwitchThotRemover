@@ -1,20 +1,28 @@
 import { defaultBannedWords } from './banned'
 
 let bannedWords = [];
+let bannedTags = [];
 
 // MutationObserver to detect when new thumbnails are added to the page
 const observer = new MutationObserver((mutations) => {
   for (const mutation of mutations)
     if (mutation.type === 'childList')
-      for (const node of mutation.addedNodes)
+      for (const node of mutation.addedNodes){
         setBannedThumbnails(node, bannedWords)
+        setBannedTags(node, bannedTags)
+      }
 });
 observer.observe(document.body, { childList: true, subtree: true });
 
 
 // Listen for messages from the popup
 chrome.runtime.onMessage.addListener(function (message) {
-  setBannedThumbnails(document.body, message.titles);
+  if(message.isTag){
+    setBannedTags(document.body, message.tags);
+  }
+  else{
+    setBannedThumbnails(document.body, message.titles);
+  }
 });
 
 
@@ -25,6 +33,10 @@ chrome.storage.sync.get('bannedWords', function (result) {
       bannedWords = defaultBannedWords;
     });
   else bannedWords = result.bannedWords;
+});
+
+chrome.storage.sync.get('bannedTags', function (result) {
+    bannedTags = result.bannedTags
 });
 
 
@@ -50,4 +62,34 @@ function setBannedThumbnails(node, bannedWords) {
       }
     }
   }
+}
+
+function setBannedTags(node, bannedTags) {
+  const shelfCardDivs = node.querySelectorAll('div[data-test-selector="shelf-card-selector"]');
+
+  shelfCardDivs.forEach((shelfCard) => {
+    const anchorTags = shelfCard.querySelectorAll('a[aria-label^="Tag"]');
+    anchorTags.forEach((anchor) => {
+      const tag = anchor.getAttribute('data-a-target');
+  
+      console.log("Tag:" + tag)
+      const isBanned = bannedTags.some((word) =>
+          //tag.toLowerCase().includes(word.toLowerCase()) || word.toLowerCase().includes(tag.toLowerCase())
+          tag.includes(word)
+        );
+ 
+      const thumbnails = node.querySelectorAll(
+        ".tc-tower div, .tw-tower div"
+      );
+      for (const thumbnail of thumbnails) {
+        if (isBanned) {
+          thumbnail.style.display = "none";
+          console.log("banned " + tag);
+        }
+        else {
+          thumbnail.style.display = "block";
+        }
+    }
+    });
+  });
 }
